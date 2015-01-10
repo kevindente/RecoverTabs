@@ -64,7 +64,7 @@
 		<key>Key</key>
 		<string>savePrivateBrowsingTabs</string>
 		<key>Title</key>
-		<string>Remember tabs from private browsing sessions</string>
+		<string>Save tabs from private browsing sessions</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
