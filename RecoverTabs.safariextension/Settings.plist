@@ -58,5 +58,15 @@
 			<real>-1</real>
 		</array>
 	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>savePrivateBrowsingTabs</string>
+		<key>Title</key>
+		<string>Remember tabs from private browsing sessions</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
 </array>
 </plist>

@@ -12,15 +12,31 @@ var closedTabURLs = [];
 // Gets setting values from extension preferences in Safari's Preferences (created in Extension Builder)
 var tabOpenStyle = safari.extension.settings.tabOpenStyle;
 var maxClosedTabs = safari.extension.settings.maxClosedTabs;
+var savePrivateBrowsingTabs = safari.extension.settings.savePrivateBrowsingTabs;
 
 // Event listens to close-tab signals from Safari and saves URL of target tab
 safari.application.addEventListener("close", function (e) {
     toSaveURL = e.target.url;
 
-    // Makes sure target is a tab, closedTabURLs doesn't already have a duplicate
-    // Also checks if the URL is "" (seems to happen when you close a not-fully-loaded page) or undefined (no URL)
-    if (e.target instanceof SafariBrowserTab && !(closedTabURLs.indexOf(toSaveURL) > -1) && toSaveURL !== "" && toSaveURL !== undefined)
-        closedTabURLs.push(toSaveURL);
+
+    // Make sure target is a tab
+    if (!(e.target instanceof SafariBrowserTab))
+        return;
+
+
+    //Make sure closedTabURLs doesn't already have a duplicate
+    if (closedTabURLs.indexOf(toSaveURL) > -1)
+        return;
+
+    //Check if the URL is "" (seems to happen when you close a not-fully-loaded page) or undefined (no URL)
+    if (toSaveURL === "" && toSaveURL === undefined)
+        return;
+
+    //Don't save private browsing tabs if so configured
+    if (safari.application.privateBrowsing.enabled && (savePrivateBrowsingTabs === false))
+        return;
+
+    closedTabURLs.push(toSaveURL);
 
     // Purges earliest tabs if saved number of tabs goes over maxClosedTabs (to prevent memory leaks in extended browsing sessions), if user has a limit defined
     if (maxClosedTabs != -1) {
