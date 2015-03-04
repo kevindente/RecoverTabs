@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Antriksh Yadav</string>
 	<key>Builder Version</key>
-	<string>9537.78.2</string>
+	<string>10600.2.5</string>
 	<key>CFBundleDisplayName</key>
 	<string>RecoverTabs</string>
 	<key>CFBundleIdentifier</key>
@@ -33,6 +33,8 @@
 	</dict>
 	<key>Description</key>
 	<string>Reopen closed tabs with Cmd+Shift+T</string>
+	<key>DeveloperIdentifier</key>
+	<string>9H4PWF4J5X</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>

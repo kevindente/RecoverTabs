@@ -8,7 +8,7 @@
 // Can toolbar button be optional?
 
 // Place to store URLs of closed tabs
-var closedTabURLs = [];
+var closedTabs = [];
 // Gets setting values from extension preferences in Safari's Preferences (created in Extension Builder)
 var tabOpenStyle = safari.extension.settings.tabOpenStyle;
 var maxClosedTabs = safari.extension.settings.maxClosedTabs;
@@ -23,10 +23,10 @@ safari.application.addEventListener("close", function (e) {
     if (!(e.target instanceof SafariBrowserTab))
         return;
 
-
-    //Make sure closedTabURLs doesn't already have a duplicate
-    if (closedTabURLs.indexOf(toSaveURL) > -1)
-        return;
+    //Make sure closedTabs doesn't already have a duplicate
+    // var tab = findTabByUrl(toSaveURL);
+    // if (tab && tab.window === e.target.browserWindow)
+    //     return;
 
     //Check if the URL is "" (seems to happen when you close a not-fully-loaded page) or undefined (no URL)
     if (toSaveURL === "" && toSaveURL === undefined)
@@ -36,27 +36,39 @@ safari.application.addEventListener("close", function (e) {
     if (safari.application.privateBrowsing.enabled && (savePrivateBrowsingTabs === false))
         return;
 
-    closedTabURLs.push(toSaveURL);
+    closedTabs.push({window: e.target.browserWindow, url: toSaveURL});
 
     // Purges earliest tabs if saved number of tabs goes over maxClosedTabs (to prevent memory leaks in extended browsing sessions), if user has a limit defined
     if (maxClosedTabs != -1) {
-        if (closedTabURLs.length > maxClosedTabs)
-            closedTabURLs.shift();
+        if (closedTabs.length > maxClosedTabs)
+            closedTabs.shift();
     }
 }, true);
 
 // This does all the heavy-work of reopening
 function reopenClosedTabs() {
-    // Gets index of activeTab so tabs can be reopened next to it
-    var index = safari.application.activeBrowserWindow.tabs.indexOf(safari.application.activeBrowserWindow.activeTab);
+    var currentWindow;
+
+    if (closedTabs.length === 0)
+        return;
 
     // This reopens tabs, clearing out saved URLs as they are reopened
-    if (closedTabURLs.length > 0) {
-        var reopenURL = closedTabURLs.pop();
-        // New tab is placed after activeTab, using index
-        var newTab = safari.application.activeBrowserWindow.openTab(tabOpenStyle, index + 1);
-        newTab.url = reopenURL;
+    var reopenTab = closedTabs.pop();
+    var windowIndex = safari.application.browserWindows.indexOf(reopenTab.window);
+
+    if (windowIndex === -1) {
+        //No window that matches, so open a new window
+        //TODO: Can you pass in a URL here? If not, handle this so we don't create an empty tab
+        currentWindow = safari.application.openBrowserWindow(reopenTab.url);
+    } else {
+        //Reopen in an existing window
+        currentWindow = reopenTab.window;
     }
+
+    var openPosition = currentWindow.tabs.indexOf(currentWindow.activeTab);
+    // New tab is placed after activeTab
+    var newTab = currentWindow.openTab(tabOpenStyle, openPosition + 1);
+    newTab.url = reopenTab.url;
 }
 
 // Message gets caught, reopenClosedTabs() gets called
@@ -76,11 +88,22 @@ function updateSettings(e) {
         // If new setting is anything other than infinite...
         if (maxClosedTabs != -1) {
             // ...remove excess URLs to match new max number of saved URLs
-            while (closedTabURLs.length > maxClosedTabs) {
-                closedTabURLs.shift();
+            while (closedTabs.length > maxClosedTabs) {
+                closedTabs.shift();
             }
         }
     }
+}
+
+function findTabByUrl(url) {
+    var matchingTab;
+    closedTabs.forEach(function(tab) {
+        if (tab.url === url) {
+            matchingTab = tab;
+        }
+    });
+
+    return matchingTab;
 }
 
  
